@@ -23,6 +23,7 @@ Base = declarative_base()
 - polymorphic/inheritance ??
 - automaticly map table name
 - local secondary index support
+- PEP8
 
 ## notes
 
@@ -31,7 +32,7 @@ Base = declarative_base()
 ## Usage
 
 class User(Table):
-    __table__ = 'xxxx' # can be ignore, which a default table name generator
+    __tablename__ = 'xxxx' # can be ignore, which a default table name generator
     __throughput__ = { 'read': 5, 'write': 5}
     
     hkey = HashKey()
@@ -61,6 +62,8 @@ query.limit()
 
 query.__iter__
 
+class ActionUser(User):
+    __tablename__ = 'yyyy'
 
 
 
