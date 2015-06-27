@@ -13,7 +13,7 @@ def test_basic():
     class User(Table):
         __tablename__ = 'user'
 
-        id = Field(attr_type=FieldType.HASH)
+        id = HashKeyField()
         name = Field(data_type=NUMBER)
 
     assert hasattr(User, '__mapper__')
@@ -24,7 +24,7 @@ def test_basic():
 class TestMetaData(object):
     def test_default(self):
         class User(Table):
-            id = Field(attr_type=FieldType.HASH)
+            id = HashKeyField()
         mapper = User.__mapper__
 
         assert mapper.metadata == metadata
@@ -33,7 +33,7 @@ class TestMetaData(object):
     def test_assign(self):
         md = MetaData()
         class User(Table):
-            id = Field(attr_type=FieldType.HASH)
+            id = HashKeyField()
             __metadata__ = md
         mapper = User.__mapper__
 
@@ -45,7 +45,7 @@ class TestMetaData(object):
         Table.__metadata__ = md
 
         class User(Table):
-            id = Field(attr_type=FieldType.HASH)
+            id = HashKeyField()
 
         mapper = User.__mapper__
         assert mapper.metadata == md
@@ -59,7 +59,7 @@ class TestMetaData(object):
         class Hi(object):
             __metadata__ = md
         class User(Table, Hi):
-            id = Field(attr_type=FieldType.HASH)
+            id = HashKeyField()
 
         mapper = User.__mapper__
         assert mapper.metadata == md
@@ -70,18 +70,18 @@ class TestTablename(object):
     def test_basic(self):
         class User(Table):
             __tablename__ = 'iamname'
-            id = Field(attr_type=FieldType.HASH)
+            id = HashKeyField()
 
         mapper = User.__mapper__
         assert mapper.tablename == 'iamname'
 
     def test_default(self):
         class User(Table):
-            id = Field(attr_type=FieldType.HASH)
+            id = HashKeyField()
         assert User.__mapper__.tablename == 'user'
 
         class UserName(Table):
-            id = Field(attr_type=FieldType.HASH)
+            id = HashKeyField()
         assert UserName.__mapper__.tablename == 'user_name'
 
     def test_inherit(self):
@@ -89,14 +89,14 @@ class TestTablename(object):
             __tablename__ = 'iamname'
 
         class User(Table, Hi):
-            id = Field(attr_type=FieldType.HASH)
+            id = HashKeyField()
 
         assert User.__mapper__.tablename == 'iamname'
 
 class TestThroughput(object):
     def test_default(self):
         class User(Table):
-            id = Field(attr_type=FieldType.HASH)
+            id = HashKeyField()
 
         mapper = User.__mapper__
         assert mapper.throughput is None
@@ -105,7 +105,7 @@ class TestThroughput(object):
         tp = { 'read': 1, 'write': 5}
         class User(Table):
             __throughput__ = tp
-            id = Field(attr_type=FieldType.HASH)
+            id = HashKeyField()
 
         mapper = User.__mapper__
         assert mapper.throughput == tp
@@ -115,7 +115,7 @@ class TestThroughput(object):
         Table.__throughput__ = tp
 
         class User(Table):
-            id = Field(attr_type=FieldType.HASH)
+            id = HashKeyField()
 
         mapper = User.__mapper__
         assert mapper.throughput == tp
@@ -127,7 +127,7 @@ class TestThroughput(object):
         class Hi(object):
             __throughput__ = tp
         class User(Table, Hi):
-            id = Field(attr_type=FieldType.HASH)
+            id = HashKeyField()
 
         mapper = User.__mapper__
         assert mapper.throughput == tp
@@ -140,7 +140,7 @@ class TestSchema(object):
 
     def test_hashkey(self):
         class User(Table):
-            id = Field(attr_type=FieldType.HASH)
+            id = HashKeyField()
 
         mapper = User.__mapper__
         assert 1 == len(mapper.schema)
@@ -151,8 +151,8 @@ class TestSchema(object):
 
     def test_rangekey(self):
         class User(Table):
-            id = Field(attr_type=FieldType.HASH)
-            name = Field(attr_type=FieldType.RANGE, data_type=NUMBER)
+            id = HashKeyField()
+            name = RangeKeyField(data_type=NUMBER)
 
         self._check_rangekey(User)
 
@@ -172,29 +172,29 @@ class TestSchema(object):
 
     def test_inherit_1(self):
         class Hi(object):
-            id = Field(attr_type=FieldType.HASH)
+            id = HashKeyField()
 
         class User(Table, Hi):
-            name = Field(attr_type=FieldType.RANGE, data_type=NUMBER)
+            name = RangeKeyField(data_type=NUMBER)
 
         self._check_rangekey(User)
 
     def test_inherit_2(self):
         class Hi(TableBase):
-            id = Field(attr_type=FieldType.HASH)
+            id = HashKeyField()
 
         class Table(Hi):
             __metaclass__ = TableMeta
 
         class User(Table, Hi):
-            name = Field(attr_type=FieldType.RANGE, data_type=NUMBER)
+            name = RangeKeyField(data_type=NUMBER)
 
         self._check_rangekey(User)
 
 class TestAttribute(object):
     def test_basic(self):
         class User(Table):
-            id = Field(attr_type=FieldType.HASH)
+            id = HashKeyField()
             name = Field()
             birth = Field(data_type=NUMBER, default=lambda: time.time())
 
@@ -208,12 +208,15 @@ class TestAttribute(object):
 class TestIndex(object):
     def test_default(self):
         class User(Table):
-            id = Field(attr_type=FieldType.HASH)
+            id = HashKeyField()
         mapper = User.__mapper__
         assert mapper.indexes is None
         assert mapper.global_indexes is None
 
     def test_basic(self):
         class User(Table):
-            id = Field(attr_type=FieldType.HASH)
-            name = Field(attr_type=FieldType.RANGE, data_type=NUMBER)
+            id = HashKeyField()
+            name = RangeKeyField(data_type=NUMBER)
+            birth = Field(data_type=NUMBER, default=lambda: time.time())
+
+            i1 = GlobalAllIndex(parts=[id, birth])

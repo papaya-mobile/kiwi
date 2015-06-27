@@ -4,7 +4,7 @@ __all__ = ['Mapper', 'setup_mapping']
 
 from . import dynamo
 from .metadata import MetaData
-from .field import Field, Index, FieldType
+from .field import *
 
 import kiwi
 
@@ -76,8 +76,8 @@ class _MapperConfig(object):
         self.throughput = None
         self.attributes = {}
         self.schema = []
-        self.indexes = []
-        self.global_indexes = []
+        self.indexes = None
+        self.global_indexes = None
 
         self._scan_metadata()
         self._scan_tablename()
@@ -111,12 +111,12 @@ class _MapperConfig(object):
                     if name in attributes:
                         continue
                     attributes[name] = obj.map(cls)
-                    if obj.attr_type == FieldType.HASH:
+                    if obj.attr_type == dynamo.HashKey:
                         if not hashkey:
-                            hashkey = dynamo.HashKey(obj.name, data_type=obj.data_type)
-                    elif obj.attr_type == FieldType.RANGE:
+                            hashkey = obj.map_key()
+                    elif obj.attr_type == dynamo.RangeKey:
                         if not rangekey:
-                            rangekey = dynamo.RangeKey(obj.name, data_type=obj.data_type)
+                            rangekey = obj.map_key()
 
         if not hashkey:
             raise Exception("not hashkey found")
@@ -127,8 +127,8 @@ class _MapperConfig(object):
 
     def _scan_indexes(self):
         cls = self.cls
-        indexes = self.indexes
-        global_indexes = self.global_indexes
+        indexes = {}
+        global_indexes = {}
 
         for base in cls.__mro__:
             for name, obj in vars(base).items():
@@ -137,12 +137,19 @@ class _MapperConfig(object):
                         obj.name = name
                     if name in indexes or name in global_indexes:
                         continue
-                    if obj.type.startswith('local_'):
+                    if isinstance(obj, LocalIndex):
                         indexes[name] = obj.map()
-                    elif obj.type.startswith('global_'):
+                    elif isinstance(obj, GlobalIndex):
                         global_indexes[name] = obj.map()
                     else:
                         pass
+        #TODO: check indexes for
+        #   1. Hash primary key  vs Hask & Range primary key
+        #   2. local indexes only for Hask & Range primary ??
+        #   3. other
+
+        self.indexes = indexes.values() or None
+        self.global_indexes = global_indexes.values() or None
 
     def _setup_mapper(self):
         cls = self.cls
