@@ -24,6 +24,7 @@ Base = declarative_base()
 - automaticly map table name
 - local secondary index support
 - PEP8
+- Abstract Table
 
 ## notes
 

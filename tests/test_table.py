@@ -2,6 +2,7 @@
 
 from kiwi import *
 
+
 def test_basic():
     class User(Table):
         __tablename__ = 'user'

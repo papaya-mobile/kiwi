@@ -3,6 +3,7 @@
 __all__ = ['Mapper', 'setup_mapping']
 
 from . import dynamo
+from .metadata import MetaData
 from .field import Field, Index, FieldType
 
 import kiwi
@@ -15,21 +16,23 @@ class Mapper(object):
                 metadata=None):
 
         self.metadata = metadata or kiwi.metadata
+        assert isinstance(self.metadata, MetaData)
 
         self.class_ = class_
         self.tablename = tablename
         self.schema = schema
         self.throughput = throughput
+        self.attributes = attributes
         self.indexes = indexes or None
         self.global_indexes = global_indexes or None
 
-        self.metadata.add_table(self)
+        self.metadata.add(self)
 
 
     @property
     def table(self):
         if not hasattr(self, '_table'):
-            self.table = dynamo.Table(self.tablename,
+            self._table = dynamo.Table(self.tablename,
                         self.schema,
                         self.throughput,
                         indexes=self.indexes,
@@ -151,11 +154,11 @@ class _MapperConfig(object):
                     attributes=self.attributes,
                     indexes=self.indexes,
                     global_indexes=self.global_indexes,
+                    metadata=self.metadata,
                 )
         cls.__mapper__ = mapper
-        kiwi.metadatas.add(mapper)
 
-        for name, attr in self.attributes:
+        for name, attr in self.attributes.items():
             setattr(cls, name, attr)
 
 

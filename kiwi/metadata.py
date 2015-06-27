@@ -5,6 +5,8 @@ __all__ = ['MetaData']
 import re
 from threading import RLock
 
+import kiwi
+
 def _default_tablename_generator(cls):
     clsname = cls.__name__
     return re.sub('([^A-Z])([A-Z])', '\\1_\\2', clsname).lower()
@@ -33,15 +35,28 @@ class MetaData(object):
                 self.throughput = throughput or None
 
 
-    def add_table(self, mapper):
+    def add(self, mapper):
         with self._lock:
             self._unconfigurable = True
 
             if mapper.tablename in self._tables:
-                raise Exception("multi table with same tablename")
+                raise Exception("multi table with same tablename: %s" % mapper.tablename)
 
             mapper.tablename = mapper.tablename or self.generate_tablename(mapper.class_)
             mapper.throughput = mapper.throughput or self.throughput
             self._tables[mapper.tablename] = mapper
+
+            kiwi.metadatas.add(self)
+
+    def __contains__(self, mapper):
+        return mapper.tablename in self._tables
+
+    def remove(self, mapper):
+        with self._lock:
+            self._tables.pop(mapper.tablename, None)
+
+    def clear(self):
+        with self._lock:
+            self._tables.clear()
 
 
