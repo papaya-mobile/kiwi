@@ -48,6 +48,10 @@ class Mapper(object):
                     global_indexes=self.global_indexes,
                     connection=self.metadata.connection)
 
+    def drop_table(self):
+        self.table.delete()
+
+
     def get_item(self, *args):
         '''
         not support `consistent`, `attributes` yet
@@ -60,6 +64,9 @@ class Mapper(object):
             return self.table.get_item(**kwargs)
         except dynamo.ItemNotFound: # ItemNotFound
             return None
+
+    def new_item(self, **kwargs):
+        return dynamo.Item(self.table, data=kwargs)
 
 def setup_mapping(cls, clsname, dict_):
     _MapperConfig(cls, clsname, dict_)

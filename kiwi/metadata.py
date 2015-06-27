@@ -59,4 +59,22 @@ class MetaData(object):
         with self._lock:
             self._tables.clear()
 
+    def __iter__(self):
+        return iter(self._tables)
+
+    def items(self):
+        return self._tables.items()
+
+    def values(self):
+        return self._tables.values()
+
+    def create_all(self):
+        for m in self.values():
+            m.create_table()
+
+    def drop_all(self):
+        for m in self.values():
+            m.drop_table()
+
+
 

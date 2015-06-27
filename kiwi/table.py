@@ -13,8 +13,6 @@ class TableMeta(type):
             setup_mapping(cls, name, dict_)
         type.__init__(cls, name, bases, dict_)
 
-    def __setattr__(cls, name, value):
-        type.__setattr__(cls, name, value)
 
 def is_table(cls):
     for base in cls.__bases__:
@@ -43,13 +41,9 @@ class TableBase(object):
     def query(self, **kwargs):
         return Query(self.__mapper__, **kwargs)
 
-    def _instrument_item(self, item):
-        assert isinstance(item, Item)
-        self._item = item
-
     def __init__(self, _item=None, **kwargs):
         item = _item or self.__mapper__.new_item(**kwargs)
-        self._instrument_item(item)
+        self._item = item
 
     def save(self, overwrite=False):
         assert hasattr(self, '_item')

@@ -17,7 +17,8 @@ class Attribute(object):
         self.data_type = data_type
 
         if not callable(default):
-            default = lambda : default
+            orig_default = default
+            default = lambda : orig_default
         self.default = default
 
     def __get__(self, obj, objtype=None):
