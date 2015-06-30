@@ -3,6 +3,7 @@
 __all__ = ['TableMeta', 'TableBase', 'Table']
 
 from .mapper import setup_mapping
+from .query import Query
 
 class TableMeta(type):
     '''
@@ -53,6 +54,10 @@ class TableBase(object):
         assert hasattr(self, '_item')
         self._item.delete()
         # TODO: some another state change
+
+    def items(self):
+        assert hasattr(self, '_item')
+        return self._item.items()
 
 class Table(TableBase):
     __metaclass__ = TableMeta

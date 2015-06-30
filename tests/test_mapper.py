@@ -210,8 +210,8 @@ class TestIndex(object):
         class User(Table):
             id = HashKeyField()
         mapper = User.__mapper__
-        assert mapper.indexes is None
-        assert mapper.global_indexes is None
+        assert mapper.indexes == {}
+        assert mapper.global_indexes == {}
 
     def test_basic(self):
         class User(Table):

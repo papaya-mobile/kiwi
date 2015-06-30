@@ -22,9 +22,10 @@ class Mapper(object):
         self.tablename = tablename
         self.schema = schema
         self.throughput = throughput
+
         self.attributes = attributes
-        self.indexes = indexes or None
-        self.global_indexes = global_indexes or None
+        self.indexes = indexes or {}
+        self.global_indexes = global_indexes or {}
 
         self.metadata.add(self)
 
@@ -32,21 +33,23 @@ class Mapper(object):
     @property
     def table(self):
         if not hasattr(self, '_table'):
-            self._table = dynamo.Table(self.tablename,
-                        self.schema,
-                        self.throughput,
-                        indexes=self.indexes,
-                        global_indexes=self.global_indexes,
-                        connection=self.metadata.connection)
+            self._table = self._build_table(dynamo.Table)
         return self._table
 
+    def _build_table(self, builder):
+        kwargs = {}
+        kwargs['throughput'] = self.throughput
+        kwargs['connection'] = self.metadata.connection
+
+        if self.indexes:
+            kwargs['indexes'] = [idx.map() for idx in self.indexes.values()]
+        if self.global_indexes:
+            kwargs['global_indexes'] = [idx.map() for idx in self.global_indexes.values()]
+
+        return builder(self.tablename, self.schema, **kwargs)
+
     def create_table(self):
-        self._table = dynamo.Table.create(self.tablename,
-                    self.schema,
-                    self.throughput,
-                    indexes=self.indexes,
-                    global_indexes=self.global_indexes,
-                    connection=self.metadata.connection)
+        self._table = self._build_table(dynamo.Table.create)
 
     def drop_table(self):
         self.table.delete()
@@ -83,8 +86,8 @@ class _MapperConfig(object):
         self.throughput = None
         self.attributes = {}
         self.schema = []
-        self.indexes = None
-        self.global_indexes = None
+        self.indexes = {}
+        self.global_indexes = {}
 
         self._scan_metadata()
         self._scan_tablename()
@@ -113,11 +116,12 @@ class _MapperConfig(object):
         for base in cls.__mro__:
             for name, obj in vars(base).items():
                 if isinstance(obj, Field):
-                    if obj.name is None:
-                        obj.name = name
                     if name in attributes:
                         continue
-                    attributes[name] = obj.map(cls)
+
+                    obj.configure(cls, name)
+                    attributes[name] = obj
+
                     if obj.attr_type == dynamo.HashKey:
                         if not hashkey:
                             hashkey = obj.map_key()
@@ -134,20 +138,21 @@ class _MapperConfig(object):
 
     def _scan_indexes(self):
         cls = self.cls
-        indexes = {}
-        global_indexes = {}
+        indexes = self.indexes
+        global_indexes = self.global_indexes
 
         for base in cls.__mro__:
             for name, obj in vars(base).items():
                 if isinstance(obj, Index):
-                    if obj.name is None:
-                        obj.name = name
                     if name in indexes or name in global_indexes:
                         continue
+
+                    obj.configure(cls, name)
+
                     if isinstance(obj, LocalIndex):
-                        indexes[name] = obj.map()
+                        indexes[name] = obj
                     elif isinstance(obj, GlobalIndex):
-                        global_indexes[name] = obj.map()
+                        global_indexes[name] = obj
                     else:
                         pass
         #TODO: check indexes for
@@ -155,8 +160,6 @@ class _MapperConfig(object):
         #   2. local indexes only for Hask & Range primary ??
         #   3. other
 
-        self.indexes = indexes.values() or None
-        self.global_indexes = global_indexes.values() or None
 
     def _setup_mapper(self):
         cls = self.cls
@@ -171,8 +174,5 @@ class _MapperConfig(object):
                     metadata=self.metadata,
                 )
         cls.__mapper__ = mapper
-
-        for name, attr in self.attributes.items():
-            setattr(cls, name, attr)
 
 

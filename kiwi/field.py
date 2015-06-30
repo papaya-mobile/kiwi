@@ -1,19 +1,43 @@
 # -*- coding: utf-8 -*-
 
-__all__ = ['Field', 'HashKeyField', 'RangeKeyField', 'Attribute',
+__all__ = ['Field', 'HashKeyField', 'RangeKeyField',
         'Index', 'LocalIndex', 'GlobalIndex', 'IncludeIndex',
         'LocalAllIndex', 'LocalKeysOnlyIndex', 'LocalIncludeIndex',
         'GlobalAllIndex', 'GlobalKeysOnlyIndex', 'GlobalIncludeIndex',
         ]
 
+
 from . import dynamo
 
-class Attribute(object):
-    def __init__(self, class_, key,
-            attr_type=None, data_type=None, default=None):
-        self.class_ = class_
-        self.key = key
-        self.attr_type = attr_type
+
+class Expression(object):
+    def __init__(self, field, op, other):
+        assert isinstance(field, Field)
+        self.field = field
+        self.op = op
+        self.other = other
+
+    def schema(self):
+        return ('%s__%s' % (self.field.name, self.op), self.other)
+
+class SchemaBase(object):
+    def __init__(self, *args, **kwargs):
+        self.owner = None
+        self._configured = False
+
+    def configure(self, class_, name=None):
+        self.owner = class_
+        if name and not self.name:
+            self.key = self.name = name
+        self._configured = True
+
+
+class Field(SchemaBase):
+    attr_type = None
+
+    def __init__(self, name=None, data_type=dynamo.STRING, default=None):
+        super(Field, self).__init__()
+        self.key = self.name = name
         self.data_type = data_type
 
         if not callable(default):
@@ -21,7 +45,9 @@ class Attribute(object):
             default = lambda : orig_default
         self.default = default
 
-    def __get__(self, obj, objtype=None):
+
+    def __get__(self, obj, owner=None):
+        assert owner == self.owner
         if obj is None:
             return self
 
@@ -35,25 +61,51 @@ class Attribute(object):
     def __delete__(self, obj):
         del obj._item[self.key]
 
+    def __eq__(self, other):
+        return Expression(self, 'eq', other)
 
-class Field(object):
-    attr_type = None
-    def __init__(self, name=None, data_type=dynamo.STRING, default=None):
-        self.name = name
-        self.data_type = data_type
-        self.default = default
+    def __lt__(self, other):
+        return Expression(self, 'lt', other)
 
-    def map(self, cls_):
-        return Attribute(cls_,
-                key=self.name,
-                attr_type=self.attr_type,
-                data_type=self.data_type,
-                default=self.default)
+    def __le__(self, other):
+        return Expression(self, 'lte', other)
+
+    def __gt__(self, other):
+        return Expression(self, 'gt', other)
+
+    def __ge__(self, other):
+        return Expression(self, 'gte', other)
+
+    def between_(self, left, right):
+        return Expression(self, 'between', (left, right))
+
+    def beginswith_(self, prefix):
+        return Expression(self, 'beginswith', prefix)
+
 
 class KeyField(Field):
     def map_key(self):
         assert self.attr_type
         return self.attr_type(self.name, data_type=self.data_type)
+
+    def __ne__(self, other):
+        return Expression(self, 'ne', other)
+
+    def in_(self, other):
+        return Expression(self, 'in', other)
+
+    def notnone_(self):
+        return Expression(self, 'nnull', None)
+
+    def isnone_(self):
+        return Expression(self, 'null', None)
+
+    def contains_(self, other):
+        return Expression(self, 'contains', other)
+
+    def notcontains_(self, other):
+        return Expression(self, 'ncontains', other)
+
 
 class HashKeyField(KeyField):
     attr_type = dynamo.HashKey
@@ -62,10 +114,11 @@ class RangeKeyField(KeyField):
     attr_type = dynamo.RangeKey
 
 
-class Index(object):
+class Index(SchemaBase):
     idx_type = None
 
     def __init__(self, name=None, parts=None):
+        super(Index, self).__init__()
         if not parts:
             raise Exception('Index parts not specified')
         self.name = name
