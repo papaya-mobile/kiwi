@@ -8,6 +8,7 @@ __all__ = ['Field', 'HashKeyField', 'RangeKeyField',
 
 
 from . import dynamo
+from .exceptions import *
 
 
 class Expression(object):
@@ -120,7 +121,7 @@ class Index(SchemaBase):
     def __init__(self, name=None, parts=None):
         super(Index, self).__init__()
         if not parts:
-            raise Exception('Index parts not specified')
+            raise ArgumentError('Argument `parts` of Index must be specified')
         self.name = name
         self.parts = parts
 

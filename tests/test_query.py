@@ -64,10 +64,10 @@ def test_check_index(UserAction):
     query = UserAction.query(index=UserAction.result_index)
     assert query._index == UserAction.result_index.name
 
-    with pytest.raises(Exception):
+    with pytest.raises(ArgumentError):
         UserAction.query(index='abc')
 
-    with pytest.raises(Exception):
+    with pytest.raises(ArgumentError):
         UserAction.query(index=Index())
 
 def test_check_attributes(UserAction):
@@ -94,10 +94,10 @@ def test_filters(UserAction):
     q, f = query._build_filters()
     assert q == {'duration__gt' : 3}
     assert f == {}
-    with pytest.raises(Exception):
+    with pytest.raises(InvalidRequestError):
         query.all()
 
-    with pytest.raises(Exception):
+    with pytest.raises(ArgumentError):
         UserAction.query().filter(3, 2)
 
 

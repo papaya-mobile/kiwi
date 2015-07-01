@@ -134,7 +134,7 @@ class TestThroughput(object):
 
 class TestSchema(object):
     def test_not_schema(self):
-        with pytest.raises(Exception):
+        with pytest.raises(NoPrimaryKeyError):
             class User(Table):
                 pass
 

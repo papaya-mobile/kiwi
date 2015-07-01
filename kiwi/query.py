@@ -3,6 +3,8 @@
 __all__ = ['Query']
 
 from .field import Expression, Index
+from .exceptions import *
+
 
 class Query(object):
     def __init__(self, mapper,
@@ -47,12 +49,12 @@ class Query(object):
             if index.owner is self._mapper.class_:
                 return index.name
             else:
-                raise Exception("Using index of other???")
+                raise ArgumentError("The index is not owned by Table %s" % self._mapper.tablename)
         if index in self._mapper.indexes:
             return index
         if index in self._mapper.global_indexes:
             return index
-        raise Exception("unknown index")
+        raise ArgumentError("Unknown index `%s`" % index)
 
     def _check_attributes(self, attrs):
         if not attrs:
@@ -93,7 +95,7 @@ class Query(object):
         query_filter, filter_kwargs = self._build_filters()
 
         if not filter_kwargs:
-            raise Exception("Primary key must be involved into filters")
+            raise InvalidRequestError("Hashkey must be involved into filters")
 
         results = query(limit=self._limit,
                     index=self._index,
@@ -116,7 +118,7 @@ class Query(object):
         assert not self._fired
         for exp in args:
             if not isinstance(exp, Expression):
-                raise Exception("filter must be  an Expression")
+                raise ArgumentError("filter must be  an Expression")
             self._filters.append(exp)
         return self
 
@@ -147,3 +149,5 @@ class Query(object):
         ret = list(self)
         return ret[0] if ret else None
 
+class Scan(object):
+    pass

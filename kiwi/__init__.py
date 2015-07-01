@@ -8,11 +8,12 @@ from .field import *
 from .mapper import *
 from .metadata import *
 from .query import *
+from .exceptions import *
 
 
 __all__ = sum(map(
                 lambda m: getattr(m, '__all__', []),
-                [table, field, mapper, metadata, query],
+                [table, field, mapper, metadata, query, exceptions],
             ), [])
 
 metadata = MetaData()

@@ -26,7 +26,7 @@ class MetaData(object):
     def configure(self, connection=None, tablename_generator=None, throughput=None):
         with self._lock:
             if self._unconfigurable:
-                raise Exception("unconfigurable metadata")
+                raise InvalidRequestError("The metadata can NOT be configured after some table has been attached")
             if connection is not None:
                 self.connection = connection or None
             if tablename_generator is not None:
@@ -40,7 +40,7 @@ class MetaData(object):
             self._unconfigurable = True
 
             if mapper.tablename in self._tables:
-                raise Exception("multi table with same tablename: %s" % mapper.tablename)
+                raise InvalidRequestError("Table with name `%s` has been added!" % mapper.tablename)
 
             mapper.tablename = mapper.tablename or self.generate_tablename(mapper.class_)
             mapper.throughput = mapper.throughput or self.throughput

@@ -5,6 +5,7 @@ __all__ = ['Mapper', 'setup_mapping']
 from . import dynamo
 from .metadata import MetaData
 from .field import *
+from .exceptions import *
 
 import kiwi
 
@@ -130,7 +131,8 @@ class _MapperConfig(object):
                             rangekey = obj.map_key()
 
         if not hashkey:
-            raise Exception("not hashkey found")
+            raise NoPrimaryKeyError("PrimaryKey must be provided."
+                        " A primary key can be hashkey or hashkey+rangekey")
         schema.append(hashkey)
         if rangekey:
             schema.append(rangekey)
