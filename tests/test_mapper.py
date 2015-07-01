@@ -6,7 +6,15 @@ import time
 from boto.dynamodb2.types import *
 from boto.dynamodb2.fields import HashKey, RangeKey
 
+import kiwi
 from kiwi import *
+
+@pytest.fixture(autouse=True)
+def clear_metadatas(request):
+    def clear():
+        for md in kiwi.metadatas:
+            md.clear()
+    request.addfinalizer(clear)
 
 
 def test_basic():

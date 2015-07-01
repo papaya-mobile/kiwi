@@ -55,12 +55,15 @@ class Mapper(object):
     def drop_table(self):
         self.table.delete()
 
+    def new_item(self, **kwargs):
+        return dynamo.Item(self.table, data=kwargs)
 
     def get_item(self, *args):
         '''
         not support `consistent`, `attributes` yet
         '''
-        assert len(self.schema) == len(args)
+        if len(self.schema) != len(args):
+            raise ArgumentError("args can not match the table's schema")
         kwargs = dict()
         for key, value in zip(self.schema, args):
             kwargs[key.name] = value
@@ -69,8 +72,26 @@ class Mapper(object):
         except dynamo.ItemNotFound: # ItemNotFound
             return None
 
-    def new_item(self, **kwargs):
-        return dynamo.Item(self.table, data=kwargs)
+    def batch_get(self, keys):
+        schema_len = len(self.schema)
+        schema_names = [k.name for k in self.schema]
+        dictkeys = []
+        for key in keys:
+            if not isinstance(key, (tuple, list)):
+                key = [key]
+            if schema_len != len(key):
+                raise ArgumentError("key `%s` can not match the table's schema" % str(key))
+            dictkeys.append(dict(zip(schema_names, key)))
+
+        if not dictkeys:
+            return []
+
+        results = self.table.batch_get(dictkeys)
+        return self.wrap_result(results)
+
+    def wrap_result(self, results):
+        return (self.class_(_item=item) for item in results)
+
 
 def setup_mapping(cls, clsname, dict_):
     _MapperConfig(cls, clsname, dict_)

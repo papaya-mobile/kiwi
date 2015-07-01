@@ -39,6 +39,10 @@ class TableBase(object):
             return None
 
     @classmethod
+    def batch_get(cls, keys):
+        return cls.__mapper__.batch_get(keys)
+
+    @classmethod
     def query(self, **kwargs):
         return Query(self.__mapper__, **kwargs)
 

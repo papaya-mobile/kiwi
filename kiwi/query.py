@@ -106,13 +106,10 @@ class Query(object):
                     query_filter=query_filter,
                     conditional_operator=None,
                     **filter_kwargs)
-        self._results = results
-
+        return self._mapper.wrap_result(results)
 
     def __iter__(self):
-        self._fire()
-        for item in self._results:
-            yield self._mapper.class_(_item=item)
+        return self._fire()
 
     def filter(self, *args):
         assert not self._fired
