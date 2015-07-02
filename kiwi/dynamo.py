@@ -4,7 +4,7 @@
 all boto.dynamodb2 import comes here
 '''
 
-from boto.dynamodb2.table import Table
+from boto.dynamodb2.table import Table, BatchTable
 from boto.dynamodb2.fields import (HashKey, RangeKey,
                                    AllIndex, KeysOnlyIndex, IncludeIndex,
                                    GlobalAllIndex, GlobalKeysOnlyIndex,

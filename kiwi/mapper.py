@@ -72,6 +72,12 @@ class Mapper(object):
         except dynamo.ItemNotFound: # ItemNotFound
             return None
 
+    def delete_item(self, **kwargs):
+        for key in self.schema:
+            if key.name not in kwargs:
+                raise ArgumentError("Primary key is NOT integral")
+        self.table.delete_item(**kwargs)
+
     def batch_get(self, keys):
         schema_len = len(self.schema)
         schema_names = [k.name for k in self.schema]

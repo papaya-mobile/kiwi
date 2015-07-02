@@ -4,6 +4,7 @@ __all__ = ['TableMeta', 'TableBase', 'Table']
 
 from .mapper import setup_mapping
 from .query import Query
+from .batch import BatchWrite
 
 class TableMeta(type):
     '''
@@ -41,6 +42,14 @@ class TableBase(object):
     @classmethod
     def batch_get(cls, keys):
         return cls.__mapper__.batch_get(keys)
+
+    @classmethod
+    def batch_write(cls):
+        return BatchWrite(cls.__mapper__)
+
+    @classmethod
+    def delete(cls, **kwargs):
+        return cls.__mapper__.delete_item(**kwargs)
 
     @classmethod
     def query(self, **kwargs):
