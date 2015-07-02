@@ -6,6 +6,7 @@ from .mapper import setup_mapping
 from .query import Query
 from .batch import BatchWrite
 
+
 class TableMeta(type):
     '''
     Table setup things here
@@ -72,6 +73,6 @@ class TableBase(object):
         assert hasattr(self, '_item')
         return self._item.items()
 
+
 class Table(TableBase):
     __metaclass__ = TableMeta
-

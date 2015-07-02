@@ -5,6 +5,7 @@ import pytest
 from boto.dynamodb2.types import *
 from kiwi import *
 
+
 class TestQuery(object):
     def test_basic(self, UserAction):
         assert 3 == UserAction.query().filter(UserAction.id == 1).count()
@@ -46,30 +47,29 @@ class TestQuery(object):
 
     def test_filters(self, UserAction):
         q, f = UserAction.query().filter(
-                UserAction.id == 3, UserAction.time < 8)._build_filters()
+                    UserAction.id == 3, UserAction.time < 8)._build_filters()
         assert q == {}
-        assert f == { 'id__eq' : 3, 'time__lt' : 8}
+        assert f == {'id__eq': 3, 'time__lt': 8}
 
         q, f = UserAction.query(index=UserAction.dur_index).filter(
-                UserAction.id == 3, UserAction.time < 8)._build_filters()
-        assert q == { 'id__eq' : 3 }
-        assert f == {'time__lt' : 8}
+                    UserAction.id == 3, UserAction.time < 8)._build_filters()
+        assert q == {'id__eq': 3}
+        assert f == {'time__lt': 8}
 
         q, f = UserAction.query(index=UserAction.result_index).filter(
-                UserAction.id == 3, UserAction.time < 8)._build_filters()
-        assert q == {'time__lt' : 8}
-        assert f == { 'id__eq' : 3 }
+                    UserAction.id == 3, UserAction.time < 8)._build_filters()
+        assert q == {'time__lt': 8}
+        assert f == {'id__eq': 3}
 
         query = UserAction.query().filter(UserAction.duration > 3)
         q, f = query._build_filters()
-        assert q == {'duration__gt' : 3}
+        assert q == {'duration__gt': 3}
         assert f == {}
         with pytest.raises(InvalidRequestError):
             query.all()
 
         with pytest.raises(ArgumentError):
             UserAction.query().filter(3, 2)
-
 
     def test_reverse(self, UserAction):
         query = UserAction.query()
@@ -120,6 +120,3 @@ class TestQuery(object):
         query = query.clone().desc()
         ua = query.first()
         assert ua.time == 10
-
-
-

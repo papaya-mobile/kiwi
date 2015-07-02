@@ -3,11 +3,11 @@
 from . import dynamo
 from .exceptions import *
 
+
 class BatchWrite(object):
     def __init__(self, mapper):
         self._mapper = mapper
         self._class = mapper.class_
-
 
     def __enter__(self):
         self._batchtable = dynamo.BatchTable(self._mapper.table)
@@ -15,7 +15,8 @@ class BatchWrite(object):
 
     def add(self, item):
         if not isinstance(item, self._class):
-            raise ArgumentError("item is not an instance of %s" % self._mapper.tablename)
+            raise ArgumentError(
+                "item is not an instance of %s" % self._mapper.tablename)
         self._batchtable.put_item(dict(item.items()))
 
     def delete(self, item):
@@ -34,4 +35,3 @@ class BatchWrite(object):
 
     def __exit__(self, type, value, traceback):
         self._batchtable.__exit__(type, value, traceback)
-

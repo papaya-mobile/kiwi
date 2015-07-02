@@ -5,7 +5,6 @@ import time
 
 from boto.dynamodb2.types import NUMBER
 
-import kiwi
 from kiwi import MetaData, Table
 from kiwi import Field, HashKeyField, RangeKeyField
 from kiwi import LocalAllIndex, GlobalAllIndex
@@ -15,9 +14,11 @@ from kiwi import LocalAllIndex, GlobalAllIndex
 def local_db():
     from boto.dynamodb2.layer1 import DynamoDBConnection
     conn = DynamoDBConnection(host="localhost", port=8000,
-            aws_access_key_id="kiwi", aws_secret_access_key="kiwi",
-            is_secure=False)
+                              aws_access_key_id="kiwi",
+                              aws_secret_access_key="kiwi",
+                              is_secure=False)
     return conn
+
 
 @pytest.fixture(scope="class")
 def metadata(request, local_db):
@@ -29,6 +30,7 @@ def metadata(request, local_db):
 
     request.addfinalizer(teardown)
     return md
+
 
 @pytest.fixture(scope="class")
 def User(metadata):
@@ -52,6 +54,7 @@ def User(metadata):
     User(id=9, name='i').save()
 
     return User
+
 
 @pytest.fixture(scope="class")
 def UserAction(metadata):
@@ -83,4 +86,3 @@ def UserAction(metadata):
     UserAction(id=4, time=13, name="h-4-13", duration=2, result="bye").save()
 
     return UserAction
-

@@ -7,14 +7,9 @@ from .exceptions import *
 
 
 class Query(object):
-    def __init__(self, mapper,
-                index=None,
-                attributes=None,
-                consistent=False,
-                max_page_size=None,
-                reverse=False,
-                limit=None,
-            ):
+    def __init__(self, mapper, index=None,
+                 attributes=None, consistent=False,
+                 max_page_size=None, reverse=False, limit=None):
         self._mapper = mapper
 
         self._index = self._check_index(index)
@@ -26,7 +21,6 @@ class Query(object):
         self._reverse = reverse
         self._limit = limit
         self._filters = []
-
 
         self._fired = False
 
@@ -49,7 +43,8 @@ class Query(object):
             if index.owner is self._mapper.class_:
                 return index.name
             else:
-                raise ArgumentError("The index is not owned by Table %s" % self._mapper.tablename)
+                raise ArgumentError("The index is not owned by "
+                                    "Table %s" % self._mapper.tablename)
         if index in self._mapper.indexes:
             return index
         if index in self._mapper.global_indexes:
@@ -65,8 +60,6 @@ class Query(object):
     def _build_filters(self):
         query_filter = []
         filter_kwargs = []
-
-        idx = getattr(self._mapper.class_, self._index) if self._index else None
 
         if self._index:
             idx = getattr(self._mapper.class_, self._index)
@@ -98,14 +91,14 @@ class Query(object):
             raise InvalidRequestError("Hashkey must be involved into filters")
 
         results = query(limit=self._limit,
-                    index=self._index,
-                    reverse=self._reverse,
-                    consistent=self._consistent,
-                    attributes=self._attributes,
-                    max_page_size=self._max_page_size,
-                    query_filter=query_filter,
-                    conditional_operator=None,
-                    **filter_kwargs)
+                        index=self._index,
+                        reverse=self._reverse,
+                        consistent=self._consistent,
+                        attributes=self._attributes,
+                        max_page_size=self._max_page_size,
+                        query_filter=query_filter,
+                        conditional_operator=None,
+                        **filter_kwargs)
         return self._mapper.wrap_result(results)
 
     def __iter__(self):
@@ -145,6 +138,3 @@ class Query(object):
         self = self.limit(1)
         ret = list(self)
         return ret[0] if ret else None
-
-class Scan(object):
-    pass

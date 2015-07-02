@@ -11,13 +11,11 @@ from .query import *
 from .exceptions import *
 
 
-__all__ = sum(map(
-                lambda m: getattr(m, '__all__', []),
-                [table, field, mapper, metadata, query, exceptions],
-            ), [])
+__all__ = sum(map(lambda m: getattr(m, '__all__', []),
+                  [table, field, mapper, metadata, query, exceptions],
+                  ), [])
 
 metadata = MetaData()
 metadatas = set()
 
 __all__ += ['metadata', 'metadatas']
-

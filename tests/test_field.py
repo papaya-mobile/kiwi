@@ -3,6 +3,7 @@
 from kiwi.field import *
 from kiwi import dynamo
 
+
 class TestLocalAllIndex(object):
     def test_basic(self):
         parts = [Field('a'), Field('b')]
@@ -127,7 +128,8 @@ class TestGlobalIncludeIndex(object):
         includes = [Field('c'), Field('d')]
         throughput = {'read': 1, 'write': 2}
         idx = GlobalIncludeIndex(name='a', parts=parts,
-                includes=includes, throughput=throughput)
+                                 includes=includes,
+                                 throughput=throughput)
 
         assert idx.idx_type == dynamo.GlobalIncludeIndex
         assert idx.name == 'a'
@@ -140,7 +142,8 @@ class TestGlobalIncludeIndex(object):
         includes = [Field('c'), Field('d')]
         throughput = {'read': 1, 'write': 2}
         idx = GlobalIncludeIndex(name='a', parts=parts,
-                includes=includes, throughput=throughput)
+                                 includes=includes,
+                                 throughput=throughput)
 
         didx = idx.map()
 
@@ -148,5 +151,3 @@ class TestGlobalIncludeIndex(object):
         assert didx.name == 'a'
         assert didx.includes_fields == ['c', 'd']
         assert didx.throughput == throughput
-
-

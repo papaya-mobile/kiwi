@@ -9,6 +9,7 @@ from boto.dynamodb2.fields import HashKey, RangeKey
 import kiwi
 from kiwi import *
 
+
 @pytest.fixture(autouse=True)
 def clear_metadatas(request):
     def clear():
@@ -27,7 +28,8 @@ def test_basic():
     assert hasattr(User, '__mapper__')
 
     mapper = User.__mapper__
-    assert mapper.class_  == User
+    assert mapper.class_ == User
+
 
 class TestMetaData(object):
     def test_default(self):
@@ -40,6 +42,7 @@ class TestMetaData(object):
 
     def test_assign(self):
         md = MetaData()
+
         class User(Table):
             id = HashKeyField()
             __metadata__ = md
@@ -66,6 +69,7 @@ class TestMetaData(object):
 
         class Hi(object):
             __metadata__ = md
+
         class User(Table, Hi):
             id = HashKeyField()
 
@@ -101,6 +105,7 @@ class TestTablename(object):
 
         assert User.__mapper__.tablename == 'iamname'
 
+
 class TestThroughput(object):
     def test_default(self):
         class User(Table):
@@ -110,7 +115,8 @@ class TestThroughput(object):
         assert mapper.throughput is None
 
     def test_basic(self):
-        tp = { 'read': 1, 'write': 5}
+        tp = {'read': 1, 'write': 5}
+
         class User(Table):
             __throughput__ = tp
             id = HashKeyField()
@@ -119,7 +125,7 @@ class TestThroughput(object):
         assert mapper.throughput == tp
 
     def test_inherit_1(self):
-        tp = { 'read': 1, 'write': 6}
+        tp = {'read': 1, 'write': 6}
         Table.__throughput__ = tp
 
         class User(Table):
@@ -131,14 +137,17 @@ class TestThroughput(object):
         del Table.__throughput__
 
     def test_inherit_2(self):
-        tp = { 'read': 1, 'write': 6}
+        tp = {'read': 1, 'write': 6}
+
         class Hi(object):
             __throughput__ = tp
+
         class User(Table, Hi):
             id = HashKeyField()
 
         mapper = User.__mapper__
         assert mapper.throughput == tp
+
 
 class TestSchema(object):
     def test_not_schema(self):
@@ -198,6 +207,7 @@ class TestSchema(object):
             name = RangeKeyField(data_type=NUMBER)
 
         self._check_rangekey(User)
+
 
 class TestAttribute(object):
     def test_basic(self):

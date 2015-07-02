@@ -12,9 +12,9 @@ import kiwi
 
 class Mapper(object):
     def __init__(self, class_, tablename, schema,
-                throughput=None, attributes=None,
-                indexes=None, global_indexes=None,
-                metadata=None):
+                 throughput=None, attributes=None,
+                 indexes=None, global_indexes=None,
+                 metadata=None):
 
         self.metadata = metadata or kiwi.metadata
         assert isinstance(self.metadata, MetaData)
@@ -30,7 +30,6 @@ class Mapper(object):
 
         self.metadata.add(self)
 
-
     @property
     def table(self):
         if not hasattr(self, '_table'):
@@ -45,7 +44,8 @@ class Mapper(object):
         if self.indexes:
             kwargs['indexes'] = [idx.map() for idx in self.indexes.values()]
         if self.global_indexes:
-            kwargs['global_indexes'] = [idx.map() for idx in self.global_indexes.values()]
+            kwargs['global_indexes'] = [idx.map() for idx in
+                                        self.global_indexes.values()]
 
         return builder(self.tablename, self.schema, **kwargs)
 
@@ -69,7 +69,7 @@ class Mapper(object):
             kwargs[key.name] = value
         try:
             return self.table.get_item(**kwargs)
-        except dynamo.ItemNotFound: # ItemNotFound
+        except dynamo.ItemNotFound:  # ItemNotFound
             return None
 
     def delete_item(self, **kwargs):
@@ -86,7 +86,8 @@ class Mapper(object):
             if not isinstance(key, (tuple, list)):
                 key = [key]
             if schema_len != len(key):
-                raise ArgumentError("key `%s` can not match the table's schema" % str(key))
+                raise ArgumentError("key `%s` can not match "
+                                    "the table's schema" % str(key))
             dictkeys.append(dict(zip(schema_names, key)))
 
         if not dictkeys:
@@ -101,6 +102,7 @@ class Mapper(object):
 
 def setup_mapping(cls, clsname, dict_):
     _MapperConfig(cls, clsname, dict_)
+
 
 class _MapperConfig(object):
 
@@ -159,11 +161,11 @@ class _MapperConfig(object):
 
         if not hashkey:
             raise NoPrimaryKeyError("PrimaryKey must be provided."
-                        " A primary key can be hashkey or hashkey+rangekey")
+                                    " A primary key can be hashkey "
+                                    "or hashkey+rangekey")
         schema.append(hashkey)
         if rangekey:
             schema.append(rangekey)
-
 
     def _scan_indexes(self):
         cls = self.cls
@@ -184,24 +186,20 @@ class _MapperConfig(object):
                         global_indexes[name] = obj
                     else:
                         pass
-        #TODO: check indexes for
-        #   1. Hash primary key  vs Hask & Range primary key
-        #   2. local indexes only for Hask & Range primary ??
-        #   3. other
-
+        # TODO: check indexes for
+        # 1. Hash primary key  vs Hask & Range primary key
+        # 2. local indexes only for Hask & Range primary ??
+        # 3. other
 
     def _setup_mapper(self):
         cls = self.cls
 
         mapper = Mapper(cls,
-                    self.tablename,
-                    schema=self.schema,
-                    throughput=self.throughput,
-                    attributes=self.attributes,
-                    indexes=self.indexes,
-                    global_indexes=self.global_indexes,
-                    metadata=self.metadata,
-                )
+                        self.tablename,
+                        schema=self.schema,
+                        throughput=self.throughput,
+                        attributes=self.attributes,
+                        indexes=self.indexes,
+                        global_indexes=self.global_indexes,
+                        metadata=self.metadata)
         cls.__mapper__ = mapper
-
-

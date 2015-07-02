@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
 __all__ = ['Field', 'HashKeyField', 'RangeKeyField',
-        'Index', 'LocalIndex', 'GlobalIndex', 'IncludeIndex',
-        'LocalAllIndex', 'LocalKeysOnlyIndex', 'LocalIncludeIndex',
-        'GlobalAllIndex', 'GlobalKeysOnlyIndex', 'GlobalIncludeIndex',
-        ]
+           'Index', 'LocalIndex', 'GlobalIndex', 'IncludeIndex',
+           'LocalAllIndex', 'LocalKeysOnlyIndex', 'LocalIncludeIndex',
+           'GlobalAllIndex', 'GlobalKeysOnlyIndex', 'GlobalIncludeIndex',
+           ]
 
 
 from . import dynamo
@@ -20,6 +20,7 @@ class Expression(object):
 
     def schema(self):
         return ('%s__%s' % (self.field.name, self.op), self.other)
+
 
 class SchemaBase(object):
     def __init__(self, *args, **kwargs):
@@ -43,9 +44,8 @@ class Field(SchemaBase):
 
         if not callable(default):
             orig_default = default
-            default = lambda : orig_default
+            default = lambda: orig_default
         self.default = default
-
 
     def __get__(self, obj, owner=None):
         assert owner == self.owner
@@ -111,6 +111,7 @@ class KeyField(Field):
 class HashKeyField(KeyField):
     attr_type = dynamo.HashKey
 
+
 class RangeKeyField(KeyField):
     attr_type = dynamo.RangeKey
 
@@ -127,13 +128,15 @@ class Index(SchemaBase):
 
     def prepare(self):
         parts = []
-        for key_cls, field in zip((dynamo.HashKey, dynamo.RangeKey), self.parts):
+        for key_cls, field in zip(
+                (dynamo.HashKey, dynamo.RangeKey), self.parts):
             key = key_cls(field.name, data_type=field.data_type)
             parts.append(key)
         return dict(name=self.name, parts=parts)
 
     def map(self):
         return self.idx_type(**self.prepare())
+
 
 class IncludeIndex(Index):
     def __init__(self, **kwargs):
@@ -143,10 +146,11 @@ class IncludeIndex(Index):
     def prepare(self):
         idx_kwargs = super(IncludeIndex, self).prepare()
 
-        includes = [ f.name for f in self.includes]
+        includes = [f.name for f in self.includes]
         idx_kwargs['includes'] = includes
 
         return idx_kwargs
+
 
 class LocalIndex(Index):
     pass
@@ -164,21 +168,26 @@ class GlobalIndex(Index):
             idx_kwargs['throughput'] = self.throughput
         return idx_kwargs
 
+
 class LocalAllIndex(LocalIndex):
     idx_type = dynamo.AllIndex
+
 
 class LocalKeysOnlyIndex(LocalIndex):
     idx_type = dynamo.KeysOnlyIndex
 
+
 class LocalIncludeIndex(LocalIndex, IncludeIndex):
     idx_type = dynamo.IncludeIndex
+
 
 class GlobalAllIndex(GlobalIndex):
     idx_type = dynamo.GlobalAllIndex
 
+
 class GlobalKeysOnlyIndex(GlobalIndex):
     idx_type = dynamo.GlobalKeysOnlyIndex
 
+
 class GlobalIncludeIndex(GlobalIndex, IncludeIndex):
     idx_type = dynamo.GlobalIncludeIndex
-
