@@ -2,3 +2,6 @@
 *pyc
 __pycache__
 *.swp
+.coverage
+.tox
+*.egg-info

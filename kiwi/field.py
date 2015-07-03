@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-__all__ = ['Field', 'HashKeyField', 'RangeKeyField',
+__all__ = ['Field', 'KeyField', 'HashKeyField', 'RangeKeyField',
            'Index', 'LocalIndex', 'GlobalIndex', 'IncludeIndex',
            'LocalAllIndex', 'LocalKeysOnlyIndex', 'LocalIncludeIndex',
            'GlobalAllIndex', 'GlobalKeysOnlyIndex', 'GlobalIncludeIndex',
@@ -48,7 +48,8 @@ class Field(SchemaBase):
         self.default = default
 
     def __get__(self, obj, owner=None):
-        assert owner == self.owner
+        if self._configured:
+            assert owner == self.owner
         if obj is None:
             return self
 
@@ -60,7 +61,7 @@ class Field(SchemaBase):
         obj._item[self.key] = value
 
     def __delete__(self, obj):
-        del obj._item[self.key]
+        raise InvalidRequestError("Unsupport Operation")
 
     def __eq__(self, other):
         return Expression(self, 'eq', other)

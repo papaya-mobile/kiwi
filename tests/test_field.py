@@ -1,7 +1,64 @@
 # -*- coding: utf-8 -*-
 
+import pytest
+
 from kiwi.field import *
+from kiwi.exceptions import *
 from kiwi import dynamo
+
+
+class TestField(object):
+    def test_basic(self):
+        f = Field('f')
+        assert isinstance(f, Field)
+        assert f.name == 'f'
+        assert f.key == 'f'
+        assert f.data_type == dynamo.STRING
+        assert f.default() is None
+        assert f.attr_type is None
+
+        kf = HashKeyField('f')
+        assert kf.attr_type is dynamo.HashKey
+
+        rf = RangeKeyField('f')
+        assert rf.attr_type is dynamo.RangeKey
+
+    def test_descriptor(self):
+        class Owner(object):
+            f = Field('f')
+            def __init__(self):
+                self._item = {}
+        Owner.f.owner = Owner
+
+        owner = Owner()
+        assert owner.f is None
+        owner.f = 3
+        assert owner.f == 3
+        owner.f = 5
+        assert owner.f == 5
+        assert owner._item['f'] == 5
+
+        with pytest.raises(InvalidRequestError):
+            del owner.f
+
+    def test_expression(self):
+        f = Field('f')
+
+        assert (f == 3).schema() == ('f__eq', 3)
+        assert (f < 3).schema() == ('f__lt', 3)
+        assert (f <= 3).schema() == ('f__lte', 3)
+        assert (f >= 3).schema() == ('f__gte', 3)
+        assert (f > 3).schema() == ('f__gt', 3)
+        assert (f.between_(2, 4)).schema() == ('f__between', (2, 4))
+        assert (f.beginswith_('a')).schema() == ('f__beginswith', 'a')
+
+        f = KeyField('f')
+        assert (f != 3).schema() == ('f__ne', 3)
+        assert (f.in_(3)).schema() == ('f__in', 3)
+        assert (f.notnone_()).schema() == ('f__nnull', None)
+        assert (f.isnone_()).schema() == ('f__null', None)
+        assert (f.contains_(3)).schema() == ('f__contains', 3)
+        assert (f.notcontains_(3)).schema() == ('f__ncontains', 3)
 
 
 class TestLocalAllIndex(object):
