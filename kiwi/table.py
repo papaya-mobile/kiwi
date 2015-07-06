@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
 
+from builtins import object
+from future.utils import with_metaclass
+
 __all__ = ['TableMeta', 'TableBase', 'Table']
 
 from .mapper import setup_mapping
@@ -74,5 +77,5 @@ class TableBase(object):
         return self._item.items()
 
 
-class Table(TableBase):
-    __metaclass__ = TableMeta
+class Table(with_metaclass(TableMeta, TableBase)):
+    pass

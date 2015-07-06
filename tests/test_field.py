@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from builtins import object
+
 import pytest
 
 from kiwi.field import *

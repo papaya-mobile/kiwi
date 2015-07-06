@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from builtins import object
+
 import pytest
 
 from boto.dynamodb2.types import *

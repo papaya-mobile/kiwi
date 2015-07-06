@@ -1,5 +1,9 @@
 # -*- coding: utf-8 -*-
 
+from builtins import zip
+from builtins import range
+from builtins import object
+
 import pytest
 
 from kiwi import *
@@ -87,7 +91,7 @@ class TestTable(object):
             with pytest.raises(ArgumentError):
                 batch.add(234)
 
-        keys = range(100, 104)
+        keys = list(range(100, 104))
         assert set([u.id for u in User.batch_get(keys)]) == set(keys)
 
         with User.batch_write() as batch:
@@ -126,7 +130,7 @@ class TestTable(object):
             with pytest.raises(ArgumentError):
                 batch.add(123444)
 
-        keys = zip(range(100, 104), range(100, 104))
+        keys = list(zip(list(range(100, 104)), list(range(100, 104))))
         assert set([(u.id, u.time) for u in UA.batch_get(keys)]) == set(keys)
 
         with UA.batch_write() as batch:

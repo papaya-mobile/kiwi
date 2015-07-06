@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from builtins import object
+
 import pytest
 
 from kiwi.metadata import MetaData
@@ -55,8 +57,8 @@ def test_tables():
     assert DummyMapper('a') not in md
 
     assert set(md) == set(['b', 'c', 'd'])
-    assert len(md.values()) == 3
-    assert len(md.items()) == 3
+    assert len(list(md.values())) == 3
+    assert len(list(md.items())) == 3
 
     md.clear()
     assert len(list(md)) == 0

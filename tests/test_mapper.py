@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from builtins import object
+
 import pytest
 import time
 
@@ -8,6 +10,7 @@ from boto.dynamodb2.fields import HashKey, RangeKey
 
 import kiwi
 from kiwi import *
+from future.utils import with_metaclass
 
 
 @pytest.fixture(autouse=True)
@@ -200,8 +203,8 @@ class TestSchema(object):
         class Hi(TableBase):
             id = HashKeyField()
 
-        class Table(Hi):
-            __metaclass__ = TableMeta
+        class Table(with_metaclass(TableMeta, Hi)):
+            pass
 
         class User(Table, Hi):
             name = RangeKeyField(data_type=NUMBER)

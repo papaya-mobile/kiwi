@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
 
+from builtins import zip
+from builtins import object
+
 __all__ = ['Field', 'KeyField', 'HashKeyField', 'RangeKeyField',
            'Index', 'LocalIndex', 'GlobalIndex', 'IncludeIndex',
            'LocalAllIndex', 'LocalKeysOnlyIndex', 'LocalIncludeIndex',

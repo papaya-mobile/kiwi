@@ -1,5 +1,9 @@
 # -*- coding: utf-8 -*-
 
+from builtins import str
+from builtins import zip
+from builtins import object
+
 __all__ = ['Mapper', 'setup_mapping']
 
 from . import dynamo
