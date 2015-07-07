@@ -12,7 +12,7 @@ from .batch import BatchWrite
 
 class TableMeta(type):
     '''
-    Table setup things here
+    Metaclass/Type of declarative base (that is, ``Table`` here)
     '''
     def __init__(cls, name, bases, dict_):
         if is_table(cls):
@@ -29,13 +29,23 @@ def is_table(cls):
 
 class TableBase(object):
     '''
-    Table API Here
+    Basic Table API
     '''
+    @classmethod
+    def create(cls):
+        '''create the table
+        '''
+        cls.__mapper__.create_table()
+
+    @classmethod
+    def drop(cls):
+        '''drop the table
+        '''
+        cls.__mapper__.drop_table()
 
     @classmethod
     def get(cls, *args):
-        '''
-            Table.get by keys
+        ''' Get item by primary key
         '''
         item = cls.__mapper__.get_item(*args)
         if item is not None:
@@ -70,7 +80,6 @@ class TableBase(object):
     def destroySelf(self):
         assert hasattr(self, '_item')
         self._item.delete()
-        # TODO: some another state change
 
     def items(self):
         assert hasattr(self, '_item')
@@ -78,4 +87,8 @@ class TableBase(object):
 
 
 class Table(with_metaclass(TableMeta, TableBase)):
-    pass
+    """
+    Base class of declarative class definitions.
+
+    To declare a class mapping to a dynamodb table, simply derive from it.
+    """

@@ -1,7 +1,6 @@
-kiwi.exceptions module
-======================
+kiwi.exceptions
+===============
 
 .. automodule:: kiwi.exceptions
     :members:
     :undoc-members:
-    :show-inheritance:

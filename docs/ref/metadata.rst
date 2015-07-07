@@ -1,7 +1,6 @@
-kiwi.metadata module
-====================
+kiwi.metadata
+=============
 
 .. automodule:: kiwi.metadata
     :members:
     :undoc-members:
-    :show-inheritance:

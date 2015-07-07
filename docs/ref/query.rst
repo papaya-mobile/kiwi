@@ -1,7 +1,6 @@
-kiwi.query module
-=================
+kiwi.query
+==========
 
 .. automodule:: kiwi.query
     :members:
     :undoc-members:
-    :show-inheritance:

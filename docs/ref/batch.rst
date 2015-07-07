@@ -1,7 +1,6 @@
-kiwi.batch module
-=================
+kiwi.batch
+==========
 
 .. automodule:: kiwi.batch
     :members:
     :undoc-members:
-    :show-inheritance:

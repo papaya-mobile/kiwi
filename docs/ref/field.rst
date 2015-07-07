@@ -1,7 +1,6 @@
-kiwi.field module
-=================
+kiwi.field
+==========
 
 .. automodule:: kiwi.field
     :members:
     :undoc-members:
-    :show-inheritance:

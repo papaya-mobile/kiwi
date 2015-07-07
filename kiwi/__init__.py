@@ -3,21 +3,28 @@
 from builtins import map
 
 __version__ = '0.0.1'
-VERSION = tuple(map(int, __version__.split(".")))
 
 from .table import *
 from .field import *
-from .mapper import *
 from .metadata import *
 from .query import *
 from .exceptions import *
 
 
 __all__ = sum(map(lambda m: getattr(m, '__all__', []),
-                  [table, field, mapper, metadata, query, exceptions],
+                  [table, field, metadata, query, exceptions],
                   ), [])
 
 metadata = MetaData()
 metadatas = set()
 
-__all__ += ['metadata', 'metadatas']
+def create_all():
+    for md in metadatas:
+        md.create_all()
+
+def drop_all():
+    for md in metadatas:
+        md.drop_all()
+
+
+__all__ += ['metadata', 'create_all', 'drop_all']

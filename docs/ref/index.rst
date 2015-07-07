@@ -1,13 +1,15 @@
 Reference of API
 ================
 
+.. In fact, there is little thing to autodoc.
+   Still need more work
+
 .. toctree::
 
-   field
    table
-   mapper
    metadata
    query
    batch
+   field
    exceptions
 

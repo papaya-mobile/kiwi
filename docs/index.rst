@@ -8,18 +8,19 @@ Welcome to Kiwi
 
 Welcome to Kiwi's documentation.
 
-Kiwi is a declarative layer on top of boto.dynamodb2.
+Kiwi is a declarative layer on top of `boto.dynamodb2`_, or in other words,
+it is a simple object-relational mapping (ORM) layer through dynamodb is
+not a relational database.
 
-Contents:
----------
 
 .. toctree::
    :maxdepth: 2
 
    install
    quickstart
+   advanced
    compat
    ref/index
-   
 
 
+.. _boto.dynamodb2: https://boto.readthedocs.org/en/latest/dynamodb2_tut.html
