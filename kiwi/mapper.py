@@ -51,7 +51,15 @@ class Mapper(object):
             kwargs['global_indexes'] = [idx.map() for idx in
                                         self.global_indexes.values()]
 
-        return builder(self.tablename, self.schema, **kwargs)
+        table = builder(self.tablename, self.schema, **kwargs)
+
+        if self.metadata.dynamizer:
+            # However, boto.dynamodb2 does not provide a public interface
+            # to custom dynamizer. Here we do it at a risk.
+            assert issubclass(self.metadata.dynamizer, dynamo.Dynamizer)
+            table._dynamizer = self.metadata.dynamizer()
+
+        return table
 
     def create_table(self):
         self._table = self._build_table(dynamo.Table.create)

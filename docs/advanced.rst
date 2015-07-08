@@ -56,3 +56,25 @@ At some time you may want to custom table api, just declare a customised
     class User(MyTable):
         ...
 
+
+custom Dynamizer
+----------------
+``Dynamizer`` is a transfer between python type and dynamodb API types.
+The default dynamizer is `boto.dynamodb.types.Dynamizer`_. However, at some
+times you may want to use a customized dynamizer. It's simple::
+
+    from boto.dynamodb2.types import Dynamizer
+    from kiwi import metadata
+
+    class MyDynamizer(Dynamizer):
+        ...
+
+     metadata.configure(dynamizer=MyDynamizer)
+
+.. Caution::
+    ``boto.dynamodb2`` **dose not** provide public interface to custom 
+    dynamizer for tables. Kiwi provides this by accessing the priavte 
+    property ``boto.dynamodb2.table.Table._dynamizer``. So use this feature 
+    at your own risk!
+
+.. _boto.dynamodb.types.Dynamizer: https://boto.readthedocs.org/en/latest/ref/dynamodb.html#boto.dynamodb.types.Dynamizer

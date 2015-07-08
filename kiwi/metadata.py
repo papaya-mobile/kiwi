@@ -8,6 +8,7 @@ import re
 from threading import RLock
 
 import kiwi
+from . import dynamo
 from .exceptions import *
 
 
@@ -18,19 +19,27 @@ def _tablename_factory(cls):
 
 class MetaData(object):
     def __init__(self, connection=None,
-                 tablename_factory=None, throughput=None):
+                 tablename_factory=None,
+                 throughput=None,
+                 dynamizer=None):
         self.connection = connection or None
         self.throughput = throughput or None
         self.tablename_factory = _tablename_factory
         if tablename_factory:
             self.tablename_factory = tablename_factory
 
+        self.dynamizer = None
+        if dynamizer:
+            self._set_dynamizer(dynamizer)
+
         self._lock = RLock()
         self._unconfigurable = False
         self._tables = {}   # tablename: mapper
 
     def configure(self, connection=None,
-                  tablename_factory=None, throughput=None):
+                  tablename_factory=None,
+                  throughput=None,
+                  dynamizer=None):
         with self._lock:
             if self._unconfigurable:
                 raise InvalidRequestError("The metadata can NOT be "
@@ -42,6 +51,14 @@ class MetaData(object):
                 self.tablename_factory = tablename_factory
             if throughput is not None:
                 self.throughput = throughput or None
+            if dynamizer is not None:
+                self._set_dynamizer(dynamizer)
+
+    def _set_dynamizer(self, dynamizer):
+        if not issubclass(dynamizer, dynamo.Dynamizer):
+            raise ArgumentError("dynamizer must be a subclass of "
+                                "boto.dynamodb2.Dynamizer")
+        self.dynamizer = dynamizer
 
     def add(self, mapper):
         with self._lock:

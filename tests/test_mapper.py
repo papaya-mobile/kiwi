@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from builtins import object
+from future.utils import with_metaclass
 
 import pytest
 import time
@@ -10,7 +11,7 @@ from boto.dynamodb2.fields import HashKey, RangeKey
 
 import kiwi
 from kiwi import *
-from future.utils import with_metaclass
+from kiwi import dynamo
 
 
 @pytest.fixture(autouse=True)
@@ -79,6 +80,20 @@ class TestMetaData(object):
         mapper = User.__mapper__
         assert mapper.metadata == md
         assert mapper in md
+
+    def test_table(self):
+        class DummyDynamizer(Dynamizer):
+            pass
+
+        md = MetaData(connection='DummyConnection',
+                      dynamizer=DummyDynamizer)
+
+        class User(Table):
+            id = HashKeyField()
+            __metadata__ = md
+        mapper = User.__mapper__
+
+        assert isinstance(mapper.table, dynamo.Table)
 
 
 class TestTablename(object):

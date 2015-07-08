@@ -6,12 +6,17 @@ import pytest
 
 from kiwi.metadata import MetaData
 from kiwi.exceptions import *
+from kiwi.dynamo import Dynamizer
 
 
 class DummyMapper(object):
     def __init__(self, tname):
         self.tablename = tname
         self.throughput = None
+
+
+class DummyDynamizer(Dynamizer):
+    pass
 
 
 def test_basic():
@@ -62,3 +67,14 @@ def test_tables():
 
     md.clear()
     assert len(list(md)) == 0
+
+
+def test_dynamizer():
+    md = MetaData()
+    assert md.dynamizer is None
+
+    with pytest.raises(ArgumentError):
+        md.configure(dynamizer=object)
+
+    md.configure(dynamizer=DummyDynamizer)
+    assert md.dynamizer is DummyDynamizer
