@@ -13,7 +13,7 @@ as following::
 
     from kiwi import Metadata
 
-    another_metadata = Metadata(connection=connect_to_region())
+    another_metadata = Metadata(connection=connect_to_region("us-east-1"))
     
     class User(Table):
         __metadata__ = another_metadata

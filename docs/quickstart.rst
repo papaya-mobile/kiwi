@@ -14,7 +14,7 @@ Let's begin with this simple example::
     from kiwi import Field
     from kiwi import HashKeyField
 
-    metadata.configure(connection=connect_to_region())
+    metadata.configure(connection=connect_to_region("us-east-1"))
     
     class User(Table):
         id = HashKeyField(data_type=NUMBER)
