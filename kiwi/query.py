@@ -3,7 +3,8 @@ from builtins import object
 
 __all__ = ['Query']
 
-from .field import Expression, Index
+from .field import Index
+from .expression import Expression
 from .exceptions import *
 
 
@@ -16,11 +17,20 @@ class Query(object):
         self._index = self._check_index(index)
         self._attributes = self._check_attributes(attributes)
 
+        if self._index:
+            idx = getattr(self._mapper.class_, self._index)
+            keyfields = idx.parts
+        else:
+            keyfields = self._mapper.schema
+        self._keyfields = [f.name for f in keyfields]
+
         self._consistent = consistent
         self._max_page_size = max_page_size
 
         self._reverse = reverse
         self._limit = limit
+
+        self._key_conds = []
         self._filters = []
 
         self._fired = False
@@ -30,10 +40,12 @@ class Query(object):
         cloned._index = self._index
         if self._attributes:
             cloned._attributes = self._attributes[:]
+        cloned._keyfields = self._keyfields[:]
         cloned._consistent = self._consistent
         cloned._max_page_size = self._max_page_size
         cloned._reverse = self._reverse
         cloned._limit = self._limit
+        cloned._key_conds = self._key_conds[:]
         cloned._filters = self._filters[:]
         return cloned
 
@@ -58,38 +70,20 @@ class Query(object):
         else:
             return [f.name for f in attrs]
 
-    def _build_filters(self):
-        query_filter = []
-        filter_kwargs = []
-
-        if self._index:
-            idx = getattr(self._mapper.class_, self._index)
-            keyfields = idx.parts
-        else:
-            keyfields = self._mapper.schema
-        keyfields = [f.name for f in keyfields]
-
-        def involve_keyfield(exp):
-            return exp.field.name in keyfields
-
-        for exp in self._filters:
-            if involve_keyfield(exp):
-                filter_kwargs.append(exp.schema())
-            else:
-                query_filter.append(exp.schema())
-
-        query_filter = dict(query_filter)
-        filter_kwargs = dict(filter_kwargs)
-        return query_filter, filter_kwargs
+    def _build_raw_filters(self, filters):
+        return dict(map(lambda exp: exp.schema(), filters))
 
     def _fire(self):
         self._fired = True
 
         query = self._mapper.table.query_2
-        query_filter, filter_kwargs = self._build_filters()
+
+        query_filter = self._build_raw_filters(self._filters)
+        filter_kwargs = self._build_raw_filters(self._key_conds)
 
         if not filter_kwargs:
-            raise InvalidRequestError("Hashkey must be involved into filters")
+            raise InvalidRequestError("Key Condition should be specified "
+                                      "via the method `query.onkeys`")
 
         results = query(limit=self._limit,
                         index=self._index,
@@ -105,11 +99,49 @@ class Query(object):
     def __iter__(self):
         return self._fire()
 
+    def onkeys(self, hashkey_cond, rangekey_cond=None):
+        ''' Specify KeyConditionExpression
+        '''
+        assert not self._fired
+        if self._key_conds:
+            raise InvalidRequestError("Key Conditions have been specified")
+
+        if not isinstance(hashkey_cond, Expression):
+            raise ArgumentError("hashkey_cond should be an Expression")
+        if hashkey_cond.field.name != self._keyfields[0]:
+            msg = "The hashkey_cond has a wrong field `%s`, "\
+                  "which should be `%s`"
+            msg = msg % (hashkey_cond.field.name, self._keyfields[0])
+            raise ArgumentError(msg)
+        if not hashkey_cond.is_eq():
+            raise ArgumentError("hashkey_cond should be an equal operation")
+
+        if rangekey_cond:
+            if not isinstance(rangekey_cond, Expression):
+                raise ArgumentError("rangekey_cond should be an Expression")
+            if rangekey_cond.field.name != self._keyfields[1]:
+                msg = "The rangekey_cond has a wrong field `%s`, "\
+                      "which should be `%s`"
+                msg = msg % (rangekey_cond.field.name, self._keyfields[1])
+                raise ArgumentError(msg)
+            if not rangekey_cond.is_key_condition():
+                msg = "The condtion `%s` should not apply to a range key"
+                msg = msg % rangekey_cond.op
+                raise ArgumentError(msg)
+
+        self._key_conds.append(hashkey_cond)
+        if rangekey_cond:
+            self._key_conds.append(rangekey_cond)
+
+        return self
+
     def filter(self, *args):
+        ''' filter on another keys
+        '''
         assert not self._fired
         for exp in args:
             if not isinstance(exp, Expression):
-                raise ArgumentError("filter must be  an Expression")
+                raise ArgumentError("filter must be an Expression")
             self._filters.append(exp)
         return self
 

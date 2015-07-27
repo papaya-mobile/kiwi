@@ -11,18 +11,8 @@ __all__ = ['Field', 'KeyField', 'HashKeyField', 'RangeKeyField',
 
 
 from . import dynamo
+from .expression import Filterable
 from .exceptions import *
-
-
-class Expression(object):
-    def __init__(self, field, op, other):
-        assert isinstance(field, Field)
-        self.field = field
-        self.op = op
-        self.other = other
-
-    def schema(self):
-        return ('%s__%s' % (self.field.name, self.op), self.other)
 
 
 class SchemaBase(object):
@@ -37,7 +27,7 @@ class SchemaBase(object):
         self._configured = True
 
 
-class Field(SchemaBase):
+class Field(SchemaBase, Filterable):
     attr_type = None
 
     def __init__(self, name=None, data_type=dynamo.STRING, default=None):
@@ -66,50 +56,11 @@ class Field(SchemaBase):
     def __delete__(self, obj):
         raise InvalidRequestError("Unsupport Operation")
 
-    def __eq__(self, other):
-        return Expression(self, 'eq', other)
-
-    def __lt__(self, other):
-        return Expression(self, 'lt', other)
-
-    def __le__(self, other):
-        return Expression(self, 'lte', other)
-
-    def __gt__(self, other):
-        return Expression(self, 'gt', other)
-
-    def __ge__(self, other):
-        return Expression(self, 'gte', other)
-
-    def between_(self, left, right):
-        return Expression(self, 'between', (left, right))
-
-    def beginswith_(self, prefix):
-        return Expression(self, 'beginswith', prefix)
-
 
 class KeyField(Field):
     def map_key(self):
         assert self.attr_type
         return self.attr_type(self.name, data_type=self.data_type)
-
-    def __ne__(self, other):
-        return Expression(self, 'ne', other)
-
-    def in_(self, other):
-        return Expression(self, 'in', other)
-
-    def notnone_(self):
-        return Expression(self, 'nnull', None)
-
-    def isnone_(self):
-        return Expression(self, 'null', None)
-
-    def contains_(self, other):
-        return Expression(self, 'contains', other)
-
-    def notcontains_(self, other):
-        return Expression(self, 'ncontains', other)
 
 
 class HashKeyField(KeyField):

@@ -196,13 +196,28 @@ query
 
 For hash-range primary key tables, you can do a query operation::
 
-    query = UserTask.query().filter(UserTask.user_id==1, 
-                                    UserTask.task_id.beginswith_('a'))
+    query = UserTask.query().onkeys(
+        UserTask.user_id==1, UserTask.task_id.beginswith_('a'))
+
+After create a ``query`` instance, ``onkeys`` method must be called to
+specify the primary key condition. The method accepts two expression at 
+most: the first is the condition on hash key, and the second is the 
+condition on range key, which can be ignored.  Note that
+
+1. ``onkeys`` must be called once and only once,
+2. the hash key condition must be a ``==`` operation,
+3. the range key condition only supports ``==``, ``<``, ``<=``, ``>``, 
+   ``>=``, ``between_``, ``beginswith_``.
+
+Then you can add filters on arbitrary field use ``filter`` method::
+
+    query.filter(UserTask.time > 100)
+
 
 And you can modify the query by call its methods::
 
     # more filter
-    query.filter(UserTask.time > 100)
+    query.filter(UserTask.done == 1)
 
     # reverse the order
     query.desc()
@@ -249,11 +264,11 @@ You can query on secondary index::
 
     # use secondary local index
     query = UserAction.query(index=UserAction.local_index)
-    query.filter(UserAction.user_id==1, UserAction.name.beginswith_('t'))
+    query.onkeys(UserAction.user_id==1, UserAction.name.beginswith_('t'))
 
     # use secondary global index
     query = UserAction.query(index=UserAction.global_index)
-    query.filter(UserAction.task_id==20, UserAction.time <= 20)
+    query.onkeys(UserAction.task_id==20, UserAction.time <= 20)
 
 
 some notice

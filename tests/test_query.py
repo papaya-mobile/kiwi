@@ -10,7 +10,7 @@ from kiwi import *
 
 class TestQuery(object):
     def test_basic(self, UserAction):
-        assert 3 == UserAction.query().filter(UserAction.id == 1).count()
+        assert 3 == UserAction.query().onkeys(UserAction.id == 1).count()
 
     def test_construct(self, UserAction):
         query = UserAction.query()
@@ -47,26 +47,110 @@ class TestQuery(object):
         query = UserAction.query(attributes=[UserAction.time])
         assert query._attributes == ['time']
 
-    def test_filters(self, UserAction):
-        q, f = UserAction.query().filter(
-                    UserAction.id == 3, UserAction.time < 8)._build_filters()
-        assert q == {}
-        assert f == {'id__eq': 3, 'time__lt': 8}
+    def test_keyconds_primary(self, UserAction):
+        # query on primary key
+        query = UserAction.query()
+        f = query._build_raw_filters(query._key_conds)
+        assert f == {}
 
-        q, f = UserAction.query(index=UserAction.dur_index).filter(
-                    UserAction.id == 3, UserAction.time < 8)._build_filters()
-        assert q == {'id__eq': 3}
-        assert f == {'time__lt': 8}
+        with pytest.raises(ArgumentError):
+            query.onkeys(4)
+        with pytest.raises(ArgumentError):
+            query.onkeys(UserAction.time == 4)
+        with pytest.raises(ArgumentError):
+            query.onkeys(UserAction.id < 4)
+        with pytest.raises(ArgumentError):
+            query.onkeys(UserAction.id == 3, 4)
+        with pytest.raises(ArgumentError):
+            query.onkeys(UserAction.id == 3, UserAction.name > 3)
+        with pytest.raises(ArgumentError):
+            query.onkeys(UserAction.id == 3, UserAction.time.isnone_())
 
-        q, f = UserAction.query(index=UserAction.result_index).filter(
-                    UserAction.id == 3, UserAction.time < 8)._build_filters()
-        assert q == {'time__lt': 8}
+        query = UserAction.query().onkeys(UserAction.id == 3)
+        f = query._build_raw_filters(query._key_conds)
         assert f == {'id__eq': 3}
 
-        query = UserAction.query().filter(UserAction.duration > 3)
-        q, f = query._build_filters()
-        assert q == {'duration__gt': 3}
+        with pytest.raises(InvalidRequestError):
+            query.onkeys(UserAction.id == 4)
+
+        query = UserAction.query().onkeys(
+            UserAction.id == 3, UserAction.time < 8)
+        f = query._build_raw_filters(query._key_conds)
+        assert f == {'id__eq': 3, 'time__lt': 8}
+
+    def test_keyconds_local_idx(self, UserAction):
+        # query on local index
+        query = UserAction.query(index=UserAction.result_index)
+        f = query._build_raw_filters(query._key_conds)
         assert f == {}
+
+        with pytest.raises(ArgumentError):
+            query.onkeys(4)
+        with pytest.raises(ArgumentError):
+            query.onkeys(UserAction.time == 4)
+        with pytest.raises(ArgumentError):
+            query.onkeys(UserAction.id < 4)
+        with pytest.raises(ArgumentError):
+            query.onkeys(UserAction.id == 3, 4)
+        with pytest.raises(ArgumentError):
+            query.onkeys(UserAction.id == 3, UserAction.name > 3)
+        with pytest.raises(ArgumentError):
+            query.onkeys(UserAction.id == 3, UserAction.result.isnone_())
+
+        query = UserAction.query(
+            index=UserAction.result_index).onkeys(UserAction.id == 3)
+        f = query._build_raw_filters(query._key_conds)
+        assert f == {'id__eq': 3}
+
+        with pytest.raises(InvalidRequestError):
+            query.onkeys(UserAction.id == 4)
+
+        query = UserAction.query(index=UserAction.result_index).onkeys(
+            UserAction.id == 3, UserAction.result == 'a')
+        f = query._build_raw_filters(query._key_conds)
+        assert f == {'id__eq': 3, 'result__eq': 'a'}
+
+    def test_keyconds_global_idx(self, UserAction):
+        # query on global index
+        query = UserAction.query(index=UserAction.dur_index)
+        f = query._build_raw_filters(query._key_conds)
+        assert f == {}
+
+        with pytest.raises(ArgumentError):
+            query.onkeys(4)
+        with pytest.raises(ArgumentError):
+            query.onkeys(UserAction.id == 4)
+        with pytest.raises(ArgumentError):
+            query.onkeys(UserAction.time < 4)
+        with pytest.raises(ArgumentError):
+            query.onkeys(UserAction.time == 3, 4)
+        with pytest.raises(ArgumentError):
+            query.onkeys(UserAction.time == 3, UserAction.name > 3)
+        with pytest.raises(ArgumentError):
+            query.onkeys(UserAction.time == 3, UserAction.duration.isnone_())
+
+        query = UserAction.query(
+            index=UserAction.dur_index).onkeys(UserAction.time == 8)
+        f = query._build_raw_filters(query._key_conds)
+        assert f == {'time__eq': 8}
+
+        with pytest.raises(InvalidRequestError):
+            query.onkeys(UserAction.time == 4)
+
+        query = UserAction.query(index=UserAction.dur_index).onkeys(
+            UserAction.time == 8, UserAction.duration > 10)
+        f = query._build_raw_filters(query._key_conds)
+        assert f == {'time__eq': 8, 'duration__gt': 10}
+
+    def test_filters(self, UserAction):
+        query = UserAction.query().filter(UserAction.id == 3)
+        q = query._build_raw_filters(query._filters)
+        assert q == {'id__eq': 3}
+
+        query = UserAction.query().filter(UserAction.duration > 3)
+        q = query._build_raw_filters(query._filters)
+        assert q == {'duration__gt': 3}
+
         with pytest.raises(InvalidRequestError):
             query.all()
 
@@ -102,7 +186,7 @@ class TestQuery(object):
         query.limit(5)
         assert query._limit == 5
 
-        query = UserAction.query().filter(UserAction.id == 2)
+        query = UserAction.query().onkeys(UserAction.id == 2)
         assert query.count() == 4
 
         query = query.clone().limit(2)
@@ -115,7 +199,7 @@ class TestQuery(object):
         assert query.count() == 1
 
     def test_first(self, UserAction):
-        query = UserAction.query().filter(UserAction.id == 2)
+        query = UserAction.query().onkeys(UserAction.id == 2)
         ua = query.first()
         assert ua.time == 2
 
