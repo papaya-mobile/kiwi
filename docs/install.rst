@@ -2,9 +2,12 @@
 Installation
 ============
 
-Kiwi depends on `boto`_ and `future`_.  You can install it via pip::
+Kiwi depends on `boto`_ and `future`_.  You can install it from source::
 
-    pip install kiwi
+    git clone git://github.com/papaya-eng/kiwi.git
+    cd kiwi
+    python setup.py sdist
+    pip install dist/kiwi-x.x.x.tar.gz
 
 
 .. _boto: https://boto.readthedocs.org/en/latest/

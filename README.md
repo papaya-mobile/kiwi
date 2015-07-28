@@ -8,7 +8,8 @@ Install Kiwi from source:
 
     $ git clone git://github.com/papaya-eng/kiwi.git
     $ cd kiwi
-    $ python setup.py install
+    $ python setup.py sdist
+    $ pip install dist/kiwi-x.x.x.tar.gz
 
 ### Basic usage
 
@@ -52,9 +53,13 @@ You may also get and query items easily:
     >>> UserTask.query().filter(UserTask.user_id==1, UserTask.task_id.beginswith_('f')).all()
     [<UserTask object at 0x7f51533c9810>, <UserTask object at 0x7f51533c9790>]
 
+
 ### Documentation
 
-You can generate documentation by yourself. The docs are created by sphinx, which can be installed via pip.
+You can read the docs online: http://papaya-kiwi.readthedocs.org/en/latest/
+
+You can also generate documentation by yourself. 
+The docs are created by sphinx, which can be installed via pip.
 
 	pip install sphinx
 	cd kiwi/docs
