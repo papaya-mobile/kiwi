@@ -68,7 +68,11 @@ class Mapper(object):
         self.table.delete()
 
     def new_item(self, **kwargs):
-        return dynamo.Item(self.table, data=kwargs)
+        item = dynamo.Item(self.table, data=kwargs)
+        for name, field in self.attributes.items():
+            if name not in item:
+                item[name] = field.default()
+        return item
 
     def get_item(self, *args):
         '''

@@ -53,6 +53,16 @@ class TestTable(object):
         u = UserAction.get(11, 1111)
         assert u is None
 
+    def test_default_value(self, User):
+        u = User(id=20, name='20default')
+        birth = u.birth
+
+        assert birth == u.birth
+
+        u.save()
+        u = User.get(20)
+        assert birth == u.birth
+
     def test_batch_get_1(self, User):
         def batch_get_keys(keys):
             return [u.id for u in User.batch_get(keys)]

@@ -2,7 +2,7 @@
 
 from builtins import map
 
-__version__ = '0.0.2'
+__version__ = '0.0.3'
 
 from .table import *
 from .field import *

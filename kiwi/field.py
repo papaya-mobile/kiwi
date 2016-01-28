@@ -46,9 +46,10 @@ class Field(SchemaBase, Filterable):
         if obj is None:
             return self
 
-        if self.key in obj._item:
-            return obj._item[self.key]
-        return self.default()
+        if self.key not in obj._item:
+            obj._item[self.key] = self.default()
+
+        return obj._item[self.key]
 
     def __set__(self, obj, value):
         obj._item[self.key] = value
