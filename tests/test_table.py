@@ -63,6 +63,13 @@ class TestTable(object):
         u = User.get(20)
         assert birth == u.birth
 
+        u = User(id=21, name='21d', birth=3)
+        assert 3 == u.birth
+
+        u.save()
+        u = User.get(21)
+        assert 3 == u.birth
+
     def test_batch_get_1(self, User):
         def batch_get_keys(keys):
             return [u.id for u in User.batch_get(keys)]
