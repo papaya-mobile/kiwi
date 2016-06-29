@@ -6,7 +6,7 @@ Kiwi is an AWS DynamoDB ORM for Python. Kiwi depends on boto and supports Python
 
 Install Kiwi from source:
 
-    $ git clone git://github.com/papaya-eng/kiwi.git
+    $ git clone https://github.com/papaya-mobile/kiwi.git
     $ cd kiwi
     $ python setup.py sdist
     $ pip install dist/kiwi-x.x.x.tar.gz
