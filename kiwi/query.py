@@ -53,11 +53,7 @@ class Query(object):
         if index is None:
             return index
         if isinstance(index, Index):
-            if index.owner is self._mapper.class_:
-                return index.name
-            else:
-                raise ArgumentError("The index is not owned by "
-                                    "Table %s" % self._mapper.tablename)
+            index = index.name
         if index in self._mapper.indexes:
             return index
         if index in self._mapper.global_indexes:

@@ -16,15 +16,16 @@ from .exceptions import *
 
 
 class SchemaBase(object):
-    def __init__(self, *args, **kwargs):
-        self.owner = None
-        self._configured = False
+    def __init__(self, key=None, name=None):
+        self.key = key
+        self.name = name
 
-    def configure(self, class_, name=None):
-        self.owner = class_
-        if name and not self.name:
-            self.key = self.name = name
-        self._configured = True
+    def configure(self, name=None):
+        if name:
+            if not self.name:
+                self.key = self.name = name
+            elif name != self.name:
+                raise ArgumentError("Try to configure schema again")
 
 
 class Field(SchemaBase, Filterable):
@@ -41,8 +42,6 @@ class Field(SchemaBase, Filterable):
         self.default = default
 
     def __get__(self, obj, owner=None):
-        if self._configured:
-            assert owner == self.owner
         if obj is None:
             return self
 

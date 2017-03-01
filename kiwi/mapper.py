@@ -165,7 +165,7 @@ class _MapperConfig(object):
                     if name in attributes:
                         continue
 
-                    obj.configure(cls, name)
+                    obj.configure(name)
                     attributes[name] = obj
 
                     if obj.attr_type == dynamo.HashKey:
@@ -194,7 +194,7 @@ class _MapperConfig(object):
                     if name in indexes or name in global_indexes:
                         continue
 
-                    obj.configure(cls, name)
+                    obj.configure(name)
 
                     if isinstance(obj, LocalIndex):
                         indexes[name] = obj

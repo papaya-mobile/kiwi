@@ -35,6 +35,9 @@ You can also inherit tables, for example::
         
     class UserName(Table, UserInfoBase):
         name = Field()
+
+    class UserNameExtend(UserName):
+        ext = Field()
         
 
 custom table api

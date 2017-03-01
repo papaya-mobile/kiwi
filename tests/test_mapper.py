@@ -57,19 +57,6 @@ class TestMetaData(object):
 
     def test_inherit_1(self):
         md = MetaData()
-        Table.__metadata__ = md
-
-        class User(Table):
-            id = HashKeyField()
-
-        mapper = User.__mapper__
-        assert mapper.metadata == md
-        assert mapper in md
-
-        del Table.__metadata__
-
-    def test_inherit_2(self):
-        md = MetaData()
 
         class Hi(object):
             __metadata__ = md
@@ -80,6 +67,21 @@ class TestMetaData(object):
         mapper = User.__mapper__
         assert mapper.metadata == md
         assert mapper in md
+
+    def test_inherit_2(self):
+        md = MetaData()
+
+        class Hi(Table):
+            __metadata__ = md
+            id = HashKeyField()
+
+        class User(Hi):
+            name = Field()
+
+        for cls in [Hi, User]:
+            mapper = cls.__mapper__
+            assert mapper.metadata == md
+            assert mapper in md
 
     def test_table(self):
         class DummyDynamizer(Dynamizer):
@@ -117,11 +119,17 @@ class TestTablename(object):
     def test_inherit(self):
         class Hi(object):
             __tablename__ = 'iamname'
+            name = Field()
 
         class User(Table, Hi):
             id = HashKeyField()
 
+        class BoomUser(User):
+            __tablename__ = "boom"
+            boom = Field()
+
         assert User.__mapper__.tablename == 'iamname'
+        assert BoomUser.__mapper__.tablename == 'boom'
 
 
 class TestThroughput(object):
@@ -226,19 +234,57 @@ class TestSchema(object):
 
         self._check_rangekey(User)
 
+    def test_inherit_3(self):
+        class Hi(Table):
+            id = HashKeyField()
+
+        class User(Hi):
+            name = RangeKeyField(data_type=NUMBER)
+
+        self._check_rangekey(User)
+
 
 class TestAttribute(object):
     def test_basic(self):
+        T = 42
+
         class User(Table):
             id = HashKeyField()
             name = Field()
-            birth = Field(data_type=NUMBER, default=lambda: time.time())
+            birth = Field(data_type=NUMBER, default=T);
 
         mapper = User.__mapper__
         assert len(mapper.attributes) == 3
         assert User.id is mapper.attributes['id']
         assert User.name is mapper.attributes['name']
         assert User.birth is mapper.attributes['birth']
+
+        u = User(id='3', name='name')
+        assert u.id == '3'
+        assert u.name == 'name'
+        assert u.birth == T
+
+    def test_inherit_1(self):
+        class Hi(object):
+            id = HashKeyField()
+
+        class User(Table, Hi):
+            name = Field(data_type=NUMBER)
+
+        mapper = User.__mapper__
+        assert User.id is mapper.attributes['id']
+        assert User.name is mapper.attributes['name']
+
+    def test_inherit_2(self):
+        class Hi(Table):
+            id = HashKeyField()
+
+        class User(Hi):
+            name = Field(data_type=NUMBER)
+
+        mapper = User.__mapper__
+        assert User.id is mapper.attributes['id']
+        assert User.name is mapper.attributes['name']
 
 
 class TestIndex(object):
