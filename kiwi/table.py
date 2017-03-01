@@ -10,6 +10,13 @@ from .query import Query
 from .batch import BatchWrite
 
 
+def is_table(cls):
+    for base in cls.__bases__:
+        if isinstance(base, TableMeta):
+            return True
+    return False
+
+
 class TableMeta(type):
     '''
     Metaclass/Type of declarative base (that is, ``Table`` here)
@@ -19,56 +26,43 @@ class TableMeta(type):
             setup_mapping(cls, name, dict_)
         type.__init__(cls, name, bases, dict_)
 
-
-def is_table(cls):
-    for base in cls.__bases__:
-        if isinstance(base, TableMeta):
-            return True
-    return False
-
-
-class TableBase(object):
+    ''' Basic Table API
     '''
-    Basic Table API
-    '''
-    @classmethod
-    def create(cls):
+    def create(tbl):
         '''create the table
         '''
-        cls.__mapper__.create_table()
+        tbl.__mapper__.create_table()
 
-    @classmethod
-    def drop(cls):
+    def drop(tbl):
         '''drop the table
         '''
-        cls.__mapper__.drop_table()
+        tbl.__mapper__.drop_table()
 
-    @classmethod
-    def get(cls, *args):
+    def get(tbl, *args):
         ''' Get item by primary key
         '''
-        item = cls.__mapper__.get_item(*args)
+        item = tbl.__mapper__.get_item(*args)
         if item is not None:
-            return cls(_item=item)
+            return tbl(_item=item)
         else:
             return None
 
-    @classmethod
-    def batch_get(cls, keys):
-        return cls.__mapper__.batch_get(keys)
+    def batch_get(tbl, keys):
+        return tbl.__mapper__.batch_get(keys)
 
-    @classmethod
-    def batch_write(cls):
-        return BatchWrite(cls.__mapper__)
+    def batch_write(tbl):
+        return BatchWrite(tbl.__mapper__)
 
-    @classmethod
-    def delete(cls, **kwargs):
-        return cls.__mapper__.delete_item(**kwargs)
+    def delete(tbl, **kwargs):
+        return tbl.__mapper__.delete_item(**kwargs)
 
-    @classmethod
-    def query(self, **kwargs):
-        return Query(self.__mapper__, **kwargs)
+    def query(tbl, **kwargs):
+        return Query(tbl.__mapper__, **kwargs)
 
+
+class TableBase(object):
+    ''' Basic Item API
+    '''
     def __init__(self, _item=None, **kwargs):
         item = _item or self.__mapper__.new_item(**kwargs)
         self._item = item
