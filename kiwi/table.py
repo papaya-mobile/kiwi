@@ -64,8 +64,7 @@ class TableBase(object):
     ''' Basic Item API
     '''
     def __init__(self, _item=None, **kwargs):
-        item = _item or self.__mapper__.new_item(**kwargs)
-        self._item = item
+        self._item = self.__mapper__.new_item(_item, **kwargs)
 
     def save(self, overwrite=False):
         assert hasattr(self, '_item')

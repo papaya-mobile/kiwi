@@ -67,8 +67,8 @@ class Mapper(object):
     def drop_table(self):
         self.table.delete()
 
-    def new_item(self, **kwargs):
-        item = dynamo.Item(self.table, data=kwargs)
+    def new_item(self, _item=None, **kwargs):
+        item = _item or dynamo.Item(self.table, data=kwargs)
         for name, field in self.attributes.items():
             if name not in item:
                 item[name] = field.default()
